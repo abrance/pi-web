@@ -1,7 +1,29 @@
-# platform/FORK.md —— 分叉登记表
+# platform/FORK.md —— 这个仓库是什么，以及我们改了上游哪里
 
-这个仓库是 [pi-web](https://github.com/agegr/pi-web) 的 fork，平台代码在这里。
-**任何改动上游文件的地方都登记在这张表里**：上游发版 merge 时按表逐个处理。
+## 这个仓库是什么
+
+**model-agent：单用户、自托管的能力工作台。**一个入口进去，能聊天（云端大模型）、能调自建的
+小模型服务、能在平台里写新能力（skill / extension）、能把会话与产物归档带走。不做多租户，
+不做能力市场，服务对象就是一个人。
+
+它是 [pi-web](https://github.com/agegr/pi-web) 的 **fork**：会话、provider 与模型配置、
+skills 与插件面板这些直接复用上游；我们只加平台需要的那部分——出厂基线与卷的两段式、
+启动对账、免登录探针、物料归档、extension 的发布与回退。
+
+| 想知道 | 去哪看 |
+|---|---|
+| 产品形态、分层、决策记录与理由 | modelman 仓库的 `docs/platform.md`（**权威**） |
+| 工作台骨架：卷布局、对账规则、端点、切片顺序 | modelman 仓库的 `docs/agent-design.md` |
+| 出厂能力基线怎么改、怎么校验 | `platform/seed/README.md` |
+| 在这里怎么构建、怎么验 | `platform/docker/`（Dockerfile 与冒烟） |
+| 上游 pi-web 本身的用法 | 上游 `README.md` 与 `docs/` |
+
+下面这张表只管一件事：**我们动了上游哪些文件**。没有登记就说明不该有改动。
+
+## 分叉登记表
+
+这个仓库是 pi-web 的 fork，**任何改动上游文件的地方都登记在这张表里**：
+上游发版 merge 时按表逐个处理。
 
 校验方式：`git diff --stat upstream/main...main` 应该与下面的表一致；
 多出来的文件说明有人改了上游却没登记。上游 remote 是 `upstream`（见 `git remote -v`）。
