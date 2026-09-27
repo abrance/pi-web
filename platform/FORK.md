@@ -42,6 +42,7 @@ skills 与插件面板这些直接复用上游；我们只加平台需要的那�
 |---|---|
 | `app/livez/route.ts`、`app/healthz/route.ts`、`app/readyz/route.ts` | 免登录探针，上游没有。上游 `proxy.ts` 的 matcher 只覆盖 `/`、`/login`、`/api/:path*`，这三个路径天然不过鉴权——正是"探针不该要密码"需要的 |
 | `.dockerignore` | 构建上下文瘦身（node_modules 与 .next 由构建期生成） |
+| `.github/workflows/agent-image.yml` | 出镜像的流水线（上游只有 `ci.yml` 与 `demo-pages.yml`）。用独立文件名与触发条件，merge 上游时不会互相冲突 |
 
 ## 三、改动的上游文件
 
