@@ -1,0 +1,92 @@
+# model-agent 镜像流水线。
+#
+# 与上游的 ci.yml 分开：文件名与触发条件都独立，merge 上游时不会互相冲突
+# （见 platform/FORK.md 的分叉登记表）。
+#
+# 口径与 modelman 的 release 一致：tag 形如 agent/vX.Y.Z → 镜像 tag 为
+# vX.Y.Z-<提交短 sha>，永不覆盖；job summary 里给出要写进 cops 的 tag。
+
+name: Agent Image
+
+on:
+  push:
+    tags:
+      - "agent/v*"
+  pull_request:
+    paths:
+      - platform/**
+      - .github/workflows/agent-image.yml
+      - app/**
+      - package.json
+      - package-lock.json
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: agent-image-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  image:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 解析镜像 tag
+        id: tag
+        run: |
+          if [ "$GITHUB_EVENT_NAME" = "push" ]; then
+            version="${GITHUB_REF_NAME#agent/}"
+          else
+            version="v0.0.0"
+          fi
+          sha="$(git rev-parse --short=7 HEAD)"
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+          echo "image_tag=${version}-${sha}" >> "$GITHUB_OUTPUT"
+          echo "镜像 tag：${version}-${sha}（事件：${GITHUB_EVENT_NAME}）"
+
+      - name: 构建镜像
+        run: docker build -f platform/docker/Dockerfile -t model-agent:ci .
+
+      - name: 冒烟（探针、登录、重启不丢东西、基线校验）
+        env:
+          IMAGE: model-agent:ci
+        run: platform/docker/smoke.sh
+
+      - name: 登录 GHCR
+        if: github.event_name == 'push'
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+
+      - name: 推镜像
+        if: github.event_name == 'push'
+        env:
+          IMAGE_TAG: ${{ steps.tag.outputs.image_tag }}
+          OWNER: ${{ github.repository_owner }}
+        run: |
+          image="ghcr.io/${OWNER,,}/model-agent"
+          docker tag model-agent:ci "${image}:${IMAGE_TAG}"
+          docker push "${image}:${IMAGE_TAG}"
+          echo "已推送 ${image}:${IMAGE_TAG}"
+
+      - name: 写入 job summary
+        if: always()
+        env:
+          IMAGE_TAG: ${{ steps.tag.outputs.image_tag }}
+          OWNER: ${{ github.repository_owner }}
+        run: |
+          {
+            echo "## model-agent 镜像"
+            echo
+            echo "- 镜像：\`ghcr.io/${OWNER,,}/model-agent\`"
+            echo "- tag：\`${IMAGE_TAG}\`（不可覆盖；PR/手动触发只构建不推送）"
+            echo
+            if [ "$GITHUB_EVENT_NAME" = "push" ]; then
+              echo "写进 cops 的值：\`AGENT_IMAGE_TAG=${IMAGE_TAG}\`"
+            else
+              echo "本次是 \`${GITHUB_EVENT_NAME}\`：只构建 + 冒烟，未推送镜像。"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
