@@ -78,6 +78,43 @@ for (const dir of skills) {
   }
 }
 
+// models.json（provider 定义）也要把关：基线里只允许**引用**密钥，不允许字面量——
+// 镜像与仓库都是公开的，一次手滑就是永久泄漏。
+const modelsFile = join(agentHome, "models.json")
+if (existsSync(modelsFile)) {
+  let catalog = null
+  try {
+    catalog = JSON.parse(readFileSync(modelsFile, "utf8"))
+  } catch (error) {
+    problems.push(`models.json 不是合法 JSON：${error.message}`)
+  }
+  const providers = catalog?.providers
+  if (catalog && (!providers || typeof providers !== "object" || Object.keys(providers).length === 0)) {
+    problems.push("models.json 里没有任何 provider")
+  }
+  for (const [name, provider] of Object.entries(providers ?? {})) {
+    if (!provider?.baseUrl) problems.push(`provider ${name} 缺 baseUrl`)
+    const apiKey = provider?.apiKey
+    if (apiKey !== undefined) {
+      const isReference =
+        typeof apiKey === "string" && (apiKey.startsWith("$") || apiKey.startsWith("!"))
+      if (!isReference) {
+        problems.push(
+          `provider ${name} 的 apiKey 是字面量：基线里只允许 $环境变量 或 !命令 形式的引用`,
+        )
+      }
+    }
+    const list = provider?.models
+    if (!Array.isArray(list) || list.length === 0) {
+      problems.push(`provider ${name} 没有声明任何模型`)
+      continue
+    }
+    for (const model of list) {
+      if (!model?.id) problems.push(`provider ${name} 有一个模型条目缺 id`)
+    }
+  }
+}
+
 if (problems.length > 0) {
   console.error(`基线校验未通过（${problems.length} 处）：`)
   for (const problem of problems) console.error(`  - ${problem}`)

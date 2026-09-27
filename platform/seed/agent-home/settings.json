@@ -1,5 +1,7 @@
 {
   "defaultProjectTrust": "always",
+  "defaultProvider": "777ai",
+  "defaultModel": "GLM-5.3-Flash",
   "packages": [
     "npm:pi-mcp-adapter@2.34.0",
     "npm:pi-hermes-memory@0.9.9",

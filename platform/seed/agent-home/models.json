@@ -1,0 +1,28 @@
+{
+  "providers": {
+    "777ai": {
+      "name": "777ai",
+      "baseUrl": "https://api.boboa.top/v1",
+      "api": "openai-responses",
+      "apiKey": "$AGENT_PROVIDER_API_KEY",
+      "models": [
+        {
+          "id": "glm-5.3",
+          "name": "GLM-5.3",
+          "reasoning": true,
+          "input": ["text"],
+          "contextWindow": 1050000,
+          "maxTokens": 128000
+        },
+        {
+          "id": "GLM-5.3-Flash",
+          "name": "GLM-5.3-Flash",
+          "reasoning": true,
+          "input": ["text"],
+          "contextWindow": 1050000,
+          "maxTokens": 128000
+        }
+      ]
+    }
+  }
+}
