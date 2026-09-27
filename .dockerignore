@@ -1,0 +1,6 @@
+# 平台新增：构建上下文瘦身。node_modules 在构建期由 npm ci 生成，
+# .next 由 next build 生成，两者都不该从宿主机传进上下文。
+node_modules
+.next
+.git
+.github

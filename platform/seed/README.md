@@ -23,7 +23,7 @@
 |---|---|---|
 | `skill-creator` | Apache-2.0，来自 Anthropic 的 skill-creator，随本目录带上 `LICENSE.txt` | "在平台内写新 skill"是工作台的核心动作 |
 
-镜像里 pin 的 Pi 本体版本：**0.86.1**（与清单同时升级；Pi 大版本会冲刷 extension 的 API）。
+镜像里 pin 的 Pi 本体版本：**与应用的 lockfile 一致**（当前 0.87.1）。构建期有一条断言：全局 CLI 的版本必须等于应用依赖的版本，不一致就当场失败——否则"平台里看到的 Pi"和"会话里跑的 Pi"会不是一回事。
 
 ## 排除项与触发条件
 
