@@ -1,0 +1,12 @@
+{
+  "defaultProjectTrust": "always",
+  "packages": [
+    "npm:pi-mcp-adapter@2.34.0",
+    "npm:pi-hermes-memory@0.9.9",
+    "npm:pi-cost@0.1.1",
+    "npm:pi-web-access@0.30.0",
+    "npm:@dietrichgebert/ponytail@4.10.0",
+    "npm:@narumitw/pi-lsp@0.49.8"
+  ],
+  "skills": ["skills/skill-creator"]
+}
